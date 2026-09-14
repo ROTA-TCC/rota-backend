@@ -12,14 +12,14 @@ Esta seção descreve como configurar o projeto diretamente em sua máquina.
 *   **Banco de Dados:** PostgreSQL (conforme definido na URL de conexão do Prisma).
 
 ### Passo a passo
-1.  **Instalação de dependências:**
+1.  **Configuração do Ambiente:**
+    Certifique-se de configurar o arquivo `.env`.
+    
+2.  **Instalação de dependências:**
     Na raiz do projeto, execute:
     ```bash
     pnpm install
     ```
-
-2.  **Configuração do Ambiente:**
-    Certifique-se de configurar o arquivo `.env` com a variável `DATABASE_URL` apontando para o seu banco de dados local.
 
 3.  **Geração do Prisma Client:**
     ```bash
