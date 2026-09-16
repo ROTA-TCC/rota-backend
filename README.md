@@ -70,3 +70,13 @@ O projeto inclui um arquivo `Dockerfile` otimizado para produção, utilizando m
 *   `pnpm run start:dev`: Inicia a aplicação em modo de observação (watch).
 *   `pnpm run test`: Executa a suíte de testes com Jest.
 *   `pnpm run lint`: Verifica a qualidade do código com ESLint.
+
+---
+
+## fluxo de trabalho
+
+Se você é novo no projeto ou precisa de ajuda com o fluxo de trabalho e comandos do Git, consulte o nosso guia passo a passo:
+
+👉 **[Guia Prático de Git e Workflow (`docs/git.md`)](docs/git.md)**
+
+---
