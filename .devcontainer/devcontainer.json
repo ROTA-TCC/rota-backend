@@ -1,0 +1,33 @@
+{
+  "name": "Node.js (Express & NestJS)",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-20-bullseye",
+  "forwardPorts": [3000, 3001, 9229],
+  "portsAttributes": {
+    "3000": {
+      "label": "Application Server",
+      "onAutoForward": "notify"
+    },
+    "9229": {
+      "label": "Node Debugger",
+      "onAutoForward": "ignore"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+      },
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "firsttris.vscode-nest-js-generator",
+        "mikestead.dotenv",
+        "humao.rest-client",
+        "eamodio.gitlens",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  },
+  "postCreateCommand": "npm install"
+}

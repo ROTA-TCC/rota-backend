@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "firsttris.vscode-nest-js-generator",
+    "mikestead.dotenv",
+    "humao.rest-client",
+    "eamodio.gitlens",
+    "ms-azuretools.vscode-docker",
+    "github.codespaces",
+    "christian-kohler.path-intellisense"
+  ]
+}

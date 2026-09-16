@@ -80,3 +80,15 @@ Se você é novo no projeto ou precisa de ajuda com o fluxo de trabalho e comand
 👉 **[Guia Prático de Git e Workflow (`docs/git.md`)](docs/git.md)**
 
 ---
+
+# Configuração de Pacotes Privados (`.npmrc`)
+
+Este projeto utiliza pacotes privados hospedados no **GitHub Packages** sob o escopo `@ROTA-TCC`. O arquivo `.npmrc` na raiz instrui o gerenciador de pacotes (`pnpm`, `npm` ou `yarn`) a buscar essas dependências no registro do GitHub e autenticar o acesso.
+
+---
+
+## O O que o arquivo faz
+
+```ini
+@ROTA-TCC:registry=[https://npm.pkg.github.com/](https://npm.pkg.github.com/)
+//[npm.pkg.github.com/:_authToken=$](https://npm.pkg.github.com/:_authToken=$){NODE_AUTH_TOKEN}
