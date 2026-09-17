@@ -36,11 +36,9 @@ describe('AbacatePayGateway', () => {
   });
 
   it('should return product if it already exists', async () => {
-    // 1. Simular erro 'already exists' no primeiro request
     httpService.request.mockImplementationOnce(() => {
       throw { response: { data: { error: 'already exists' } } };
     });
-    // 2. Simular sucesso no segundo request (findProductByExternalId)
     httpService.request.mockReturnValueOnce(
       of({ data: { data: [{ externalId: 'ext-1', id: 'prod-123' }] } }),
     );

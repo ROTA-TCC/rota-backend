@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { createHash } from 'crypto';
 import { UserRepository } from '../../users/repositories/user.repository';
 
 @Injectable()
@@ -20,7 +21,6 @@ export class DeviceMonitorService {
   }
 
   private generateFingerprint(userAgent: string): string {
-    // Em produção, deveria ser um hash SHA-256
-    return Buffer.from(userAgent).toString('base64').substring(0, 50);
+    return createHash('sha256').update(userAgent || '').digest('hex');
   }
 }

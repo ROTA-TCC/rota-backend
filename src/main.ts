@@ -1,20 +1,20 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import helmet from 'helmet';
-import cookieParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import { Logger } from 'nestjs-pino';
-// import './instrument'; // Carregado condicionalmente no bootstrap
+import { AppModule } from './app.module';
 
-// Fix para serialização de BigInt
+// Polyfill necessário: JSON.stringify lança TypeError nativo ao serializar BigInt
 (BigInt.prototype as any).toJSON = function () {
   return this.toString();
 };
 
 async function bootstrap() {
+  // O Sentry exige interceptar os módulos nativos do Node.js antes da criação da instância do Nest
   if (process.env.ENABLE_SENTRY === 'true') {
-    await import('./instrument.js');
+    await import('./instrument');
   }
 
   const app = await NestFactory.create(AppModule, {
@@ -22,9 +22,10 @@ async function bootstrap() {
     bufferLogs: true,
   });
 
-  app.useLogger(app.get(Logger));
+  const logger = app.get(Logger);
+  app.useLogger(logger);
 
-  // Configuração do Helmet compatível com Swagger UI
+  // Relaxamento pontual da CSP do Helmet para impedir o bloqueio de scripts inline do Swagger UI
   app.use(
     helmet({
       contentSecurityPolicy: {
@@ -32,23 +33,34 @@ async function bootstrap() {
           defaultSrc: [`'self'`],
           styleSrc: [`'self'`, `'unsafe-inline'`],
           imgSrc: [`'self'`, 'data:', 'validator.swagger.io'],
-          scriptSrc: [`'self'`, `https: 'unsafe-inline'`],
+          scriptSrc: [`'self'`, `'unsafe-inline'`, 'https:'],
         },
       },
     }),
   );
 
   app.use(cookieParser());
-  app.enableCors({ credentials: true, origin: process.env.FRONTEND_URL });
+
+  const allowedOrigins = process.env.FRONTEND_URL
+    ? process.env.FRONTEND_URL.split(',').map((url) => url.trim())
+    : true;
+
+  app.enableCors({
+    credentials: true,
+    origin: allowedOrigins,
+  });
 
   app.useGlobalPipes(
-    new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
   );
 
-  // Encerramento gracioso (Graceful Shutdown)
   app.enableShutdownHooks();
 
-  const config = new DocumentBuilder()
+  const swaggerConfig = new DocumentBuilder()
     .setTitle('Plataforma Backend API')
     .setDescription(
       `
@@ -75,7 +87,7 @@ async function bootstrap() {
     })
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('docs', app, document, {
     swaggerOptions: {
       persistAuthorization: true,
@@ -87,6 +99,8 @@ async function bootstrap() {
 
   const port = process.env.PORT || 3000;
   await app.listen(port, '0.0.0.0');
-  console.log(`Application is running on: http://localhost:${port}`);
+
+  logger.log(`Application is running on: http://localhost:${port}`);
 }
+
 bootstrap();

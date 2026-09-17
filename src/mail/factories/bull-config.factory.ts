@@ -38,7 +38,6 @@ function getHostConnectionOptions(config: ConfigService): ConnectionOptions {
     maxRetriesPerRequest: null,
   };
 
-  // Se não for localhost, habilitar TLS por padrão
   if (host !== 'localhost' && host !== '127.0.0.1') {
     options.tls = {
       rejectUnauthorized: false,

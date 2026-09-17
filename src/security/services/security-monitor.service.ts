@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { createHash } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MailService } from '../../mail/services/mail.service';
 
@@ -7,11 +8,11 @@ export class SecurityMonitorService {
   private readonly logger = new Logger(SecurityMonitorService.name);
 
   constructor(
-    private prisma: PrismaService,
-    private mailService: MailService,
+    private readonly prisma: PrismaService,
+    private readonly mailService: MailService,
   ) {}
 
-  async monitorLogin(userId: string, userAgent: string, email: string) {
+  async monitorLogin(userId: string, userAgent: string, email: string): Promise<void> {
     const fingerprint = this.generateFingerprint(userAgent);
 
     const device = await this.prisma.knownDevice.findUnique({
@@ -31,34 +32,37 @@ export class SecurityMonitorService {
   }
 
   private generateFingerprint(userAgent: string): string {
-    // Usar hash simples ou o próprio UA limpo
-    return Buffer.from(userAgent).toString('base64').substring(0, 50);
+    return createHash('sha256').update(userAgent || '').digest('hex');
   }
 
   private async handleNewDevice(
     userId: string,
     fingerprint: string,
     email: string,
-  ) {
+  ): Promise<void> {
     this.logger.warn(`Novo dispositivo detectado para o usuário ${userId}`);
 
     await this.prisma.knownDevice.create({
       data: { userId, deviceFingerprint: fingerprint },
     });
 
-    await this.mailService.sendSecurityAlert(
-      email,
-      'Novo dispositivo detectado',
-    );
+    try {
+      await this.mailService.sendSecurityAlert(
+        email,
+        'Novo dispositivo detectado',
+      );
+    } catch (error) {
+      this.logger.error(`Falha ao enviar e-mail de alerta de segurança para ${email}:`, error);
+    }
   }
 
   async logAction(
     userId: string,
     action: string,
-    details: any,
+    details: Record<string, any>,
     ip: string,
     ua: string,
-  ) {
+  ): Promise<void> {
     await this.prisma.auditLog.create({
       data: { userId, action, details, ipAddress: ip, userAgent: ua },
     });

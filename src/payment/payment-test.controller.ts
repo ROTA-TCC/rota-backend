@@ -35,7 +35,6 @@ export class PaymentTestController {
       );
     }
 
-    // Gerar assinatura válida para o seu próprio serviço aceitar
     const signature = crypto
       .createHmac('sha256', secret)
       .update(rawBody)
