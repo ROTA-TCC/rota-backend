@@ -2,7 +2,15 @@ FROM node:22-alpine AS build
 
 WORKDIR /usr/src/app
 
-ARG NODE_AUTH_TOKEN
+RUN --mount=type=secret,id=NODE_AUTH_TOKEN \
+    NODE_AUTH_TOKEN=$(cat /run/secrets/NODE_AUTH_TOKEN 2>/dev/null) && \
+    if [ -n "$NODE_AUTH_TOKEN" ]; then \
+      echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" > .npmrc; \
+    fi && \
+    npm install -g pnpm && \
+    pnpm install --frozen-lockfile --ignore-scripts && \
+    rm -f .npmrc
+
 
 COPY package.json pnpm-lock.yaml ./
 
