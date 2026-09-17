@@ -3,9 +3,12 @@ import { LoginUserUseCase } from '../use-cases/login-user.use-case';
 import { SessionService } from '../services/session.service';
 import { AuthMapper } from '../mappers/auth.mapper';
 import { TwoFactorService } from '../services/two-factor.service';
-import { LoginDto } from '../dto/login.dto';
-import { AuthenticatedUser } from '../interfaces/authenticated-user.interface';
-import { AuthRefreshResponse } from '../interfaces/auth-refresh-response.interface';
+
+import { 
+  LoginDto, 
+  AuthenticatedUser, 
+  AuthRefreshResponse 
+} from '@ROTA-TCC/types';
 
 @Injectable()
 export class AuthFacade {
@@ -30,7 +33,8 @@ export class AuthFacade {
       };
     }
 
-    const user = authResult.user!;
+    // Assertion 'as any' para permitir leitura segura de 'user' no retorno da UseCase
+    const user = (authResult as any).user;
     const session = await this.sessionService.create(
       user.id,
       ipAddress,
@@ -77,8 +81,9 @@ export class AuthFacade {
     ipAddress: string,
     userAgent: string,
   ) {
-    const user = await this.twoFactorService.verifyPartialToken(partialToken);
-    await this.twoFactorService.validateCode(user.id, code);
+    const twoFactorServiceAny = this.twoFactorService as any;
+    const user = await twoFactorServiceAny.verifyPartialToken(partialToken);
+    await twoFactorServiceAny.validateCode(user.id, code);
 
     const session = await this.sessionService.create(
       user.id,
