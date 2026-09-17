@@ -47,7 +47,6 @@ export class UserService {
     });
   }
 
-  // ... rest of the methods (findByEmail, updatePassword, etc)
   async findOne(id: string) {
     return this.repository.findById(id);
   }

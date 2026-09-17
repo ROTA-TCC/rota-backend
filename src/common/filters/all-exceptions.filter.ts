@@ -12,6 +12,11 @@ import * as Sentry from '@sentry/nestjs';
 import { DomainError } from '../domain/errors/domain.error';
 import { Request } from 'express';
 
+export const PrismaErrorCode = {
+  UniqueConstraintFailed: 'P2002',
+  RecordNotFound: 'P2025',
+} as const;
+
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger('ExceptionFilter');
@@ -27,14 +32,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
     let message = 'Internal server error';
     let errorCode = 'INTERNAL_ERROR';
 
-    // Tratar erros de domínio (Negócio)
     if (exception instanceof DomainError) {
       httpStatus = exception.statusCode;
       message = exception.message;
       errorCode = exception.errorCode;
-    }
-    // Tratar exceções conhecidas do NestJS
-    else if (exception instanceof HttpException) {
+    } else if (exception instanceof HttpException) {
       httpStatus = exception.getStatus();
       const response = exception.getResponse();
       const responseBody =
@@ -43,16 +45,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
           : { message: response };
       message = responseBody.message || exception.message;
       errorCode = responseBody.error || 'HTTP_ERROR';
-    }
-    // Tratar erros específicos do Prisma (Database)
-    else if (exception instanceof Prisma.PrismaClientKnownRequestError) {
+    } else if (exception instanceof Prisma.PrismaClientKnownRequestError) {
       switch (exception.code) {
-        case 'P2002': // Unique constraint failed
+        case PrismaErrorCode.UniqueConstraintFailed:
           httpStatus = HttpStatus.CONFLICT;
-          message = `O registro já existe.`;
+          message = 'O registro já existe.';
           errorCode = 'UNIQUE_CONSTRAINT_FAILED';
           break;
-        case 'P2025': // Record not found
+        case PrismaErrorCode.RecordNotFound:
           httpStatus = HttpStatus.NOT_FOUND;
           message = 'Registro não encontrado.';
           errorCode = 'NOT_FOUND';
@@ -64,7 +64,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       }
     }
 
-    // Logar e enviar para o Sentry apenas se for um erro interno (500)
+    // Evita sobrecarregar a APM/Sentry com erros operacionais do cliente (4xx) registrando apenas falhas não tratadas do servidor (5xx)
     if (httpStatus >= (HttpStatus.INTERNAL_SERVER_ERROR as number)) {
       Sentry.captureException(exception);
 

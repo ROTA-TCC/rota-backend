@@ -20,8 +20,7 @@ export class DeviceMonitorService {
   }
 
   private generateFingerprint(userAgent: string): string {
-    // Implementação KISS: base64 do user agent truncado
-    // Em produção, isso poderia ser um hash SHA-256
+    // Em produção, deveria ser um hash SHA-256
     return Buffer.from(userAgent).toString('base64').substring(0, 50);
   }
 }

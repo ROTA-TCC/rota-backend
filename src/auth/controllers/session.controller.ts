@@ -39,12 +39,11 @@ class SessionResponse {
 @UseInterceptors(TransformInterceptor)
 export class SessionController {
   constructor(private readonly sessionService: SessionService) {}
-
+  
   @Get()
   @ApiOperation({
     summary: 'Listar sessões ativas',
-    description:
-      'Retorna uma lista de todos os dispositivos e navegadores onde o usuário está autenticado.',
+    description: 'Retorna uma lista de todos os dispositivos e navegadores onde o usuário está autenticado.',
   })
   @ApiOkResponse({
     description: 'Lista de sessões retornada com sucesso.',
@@ -53,12 +52,11 @@ export class SessionController {
   async list(@NestRequest() req: Request) {
     return this.sessionService.list(req.user.sub);
   }
-
+  
   @Delete('all-others')
   @ApiOperation({
     summary: 'Revogar outras sessões',
-    description:
-      'Encerra todas as sessões do usuário, exceto a atual. Útil em caso de suspeita de invasão.',
+    description: 'Encerra todas as sessões do usuário, exceto a atual. Útil em caso de suspeita de invasão.',
   })
   @ApiOkResponse({ description: 'Demais sessões revogadas.' })
   async revokeAllOthers(@NestRequest() req: Request) {
@@ -67,18 +65,17 @@ export class SessionController {
       req.user.sessionId,
     );
   }
-
+  
   @Delete('all')
   @ApiOperation({
     summary: 'Revogar todas as sessões',
-    description:
-      'Encerra absolutamente todas as sessões do usuário, incluindo a atual.',
+    description: 'Encerra absolutamente todas as sessões do usuário, incluindo a atual.',
   })
   @ApiOkResponse({ description: 'Todas as sessões revogadas.' })
   async revokeAll(@NestRequest() req: Request) {
     return this.sessionService.revokeAll(req.user.sub);
   }
-
+  
   @Delete(':id')
   @ApiOperation({
     summary: 'Revogar sessão específica',

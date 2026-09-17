@@ -25,7 +25,7 @@ export class LoginUserUseCase {
     const email = new Email(credentials.email);
     const password = new Password(credentials.password);
 
-    const user = (await this.userService.findByEmail(email.toString())) as any;
+    const user = await this.userService.findByEmail(email.toString());
 
     if (
       !user ||
@@ -37,13 +37,7 @@ export class LoginUserUseCase {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isNewDevice = await this.twoFactorService.isNewDevice(
-      user.id,
-      userAgent,
-    );
-
     if (user.is2faEnabled) {
-      // Nota: o generateAndSendCode agora emite o evento que o AuthListener captura
       await this.twoFactorService.generateAndSendCode(user);
       return {
         requires2fa: true,
@@ -54,10 +48,23 @@ export class LoginUserUseCase {
       };
     }
 
+    const isNewDevice = await this.twoFactorService.isNewDevice(
+      user.id,
+      userAgent,
+    );
+
     if (isNewDevice) {
-      await this.twoFactorService.logDevice(user.id, userAgent);
+      await this.twoFactorService.logDevice(user.id, userAgent, ipAddress);
     }
 
-    return { requires2fa: false, user };
+    const accessToken = this.jwtService.sign({
+      sub: user.id,
+      email: user.email.toString(),
+    });
+
+    return {
+      requires2fa: false,
+      accessToken,
+    };
   }
 }

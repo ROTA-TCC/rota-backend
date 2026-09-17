@@ -19,7 +19,7 @@ export class TwoFactorService {
   ): Promise<void> {
     const strategy = this.strategyRegistry.getStrategy(strategyName);
     const code = await strategy.generateCode(user.id);
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutos
 
     await this.userRepository.update2faCode(user.id, code, expiresAt);
     await strategy.sendCode(user.email, code);

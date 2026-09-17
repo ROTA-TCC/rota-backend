@@ -19,7 +19,6 @@ describe('Auth Integration (e2e)', () => {
   });
 
   afterAll(async () => {
-    // Limpeza de dados após testes
     await prisma.user.deleteMany({ where: { email: 'e2e-test@test.com' } });
     await app.close();
   });

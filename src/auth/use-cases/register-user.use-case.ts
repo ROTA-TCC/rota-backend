@@ -12,18 +12,18 @@ export class RegisterUserUseCase {
     private readonly securityService: SecurityService,
   ) {}
 
-  async execute(registrationData: RegisterDto, requestId?: string) {
-    // Validação básica via VOs (já disparam exceções se inválidos)
-    new Email(registrationData.email);
+  async execute(registrationData: RegisterDto) {
+    const email = new Email(registrationData.email);
     const password = new Password(registrationData.password);
 
-    // Hash da senha
     const hashedPassword = await this.securityService.hashPassword(
       password.toString(),
     );
 
-    // Criação do usuário (o UserService emite o evento user.created)
-    // Nota: Atualmente o UserService não recebe requestId, poderíamos passar se necessário.
-    return this.userService.create(registrationData, hashedPassword);
+    return this.userService.create({
+      ...registrationData,
+      email: email.toString(),
+      password: hashedPassword,
+    });
   }
 }

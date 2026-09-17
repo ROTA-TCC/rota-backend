@@ -18,7 +18,7 @@ export class RequestPasswordResetUseCase {
     if (!user) throw new NotFoundException('User not found');
 
     const token = nanoid(32);
-    const expiresAt = new Date(Date.now() + 3600000); // 1 hour
+    const expiresAt = new Date(Date.now() + 3600000); // 1 hora
 
     await this.passwordResetRepository.create(user.id, token, expiresAt);
 
