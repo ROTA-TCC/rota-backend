@@ -14,7 +14,7 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   // O Sentry exige interceptar os módulos nativos do Node.js antes da criação da instância do Nest
   if (process.env.ENABLE_SENTRY === 'true') {
-    await import('./instrument');
+    await import('./instrument.js');
   }
 
   const app = await NestFactory.create(AppModule, {
