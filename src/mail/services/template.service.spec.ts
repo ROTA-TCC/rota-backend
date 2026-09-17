@@ -1,9 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TemplateService } from './template.service';
-import * as fs from 'fs';
 import * as ejs from 'ejs';
 
-jest.mock('fs');
 jest.mock('ejs');
 
 describe('TemplateService', () => {
@@ -25,29 +23,25 @@ describe('TemplateService', () => {
     expect(service).toBeDefined();
   });
 
-  it('should compile template with context', async () => {
-    const templateContent = '<h1>Welcome <%= name %></h1>';
+  it('should render template with context', async () => {
     const compiledOutput = '<h1>Welcome User</h1>';
+    (ejs.renderFile as jest.Mock).mockResolvedValue(compiledOutput);
 
-    (fs.readFileSync as jest.Mock).mockReturnValue(templateContent);
-    (ejs.render as jest.Mock).mockReturnValue(compiledOutput);
+    const result = await service.render('welcome', { name: 'User' });
 
-    const result = await service.compile('welcome', { name: 'User' });
-
-    expect(fs.readFileSync).toHaveBeenCalledWith(
-      expect.stringContaining('welcome'),
-      'utf-8',
+    expect(ejs.renderFile).toHaveBeenCalledWith(
+      expect.stringContaining('welcome.ejs'),
+      { name: 'User' },
     );
-    expect(ejs.render).toHaveBeenCalledWith(templateContent, { name: 'User' });
     expect(result).toBe(compiledOutput);
   });
 
-  it('should throw exception when template file does not exist', async () => {
-    (fs.readFileSync as jest.Mock).mockImplementation(() => {
-      throw new Error('ENOENT: no such file or directory');
-    });
+  it('should throw exception when renderFile fails', async () => {
+    (ejs.renderFile as jest.Mock).mockRejectedValue(
+      new Error('ENOENT: no such file or directory'),
+    );
 
-    await expect(service.compile('missing-template', {})).rejects.toThrow(
+    await expect(service.render('missing-template', {})).rejects.toThrow(
       'ENOENT: no such file or directory',
     );
   });

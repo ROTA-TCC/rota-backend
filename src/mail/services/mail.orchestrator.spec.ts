@@ -29,7 +29,7 @@ describe('MailOrchestrator', () => {
         return config[key];
       }),
     }
-    as any;
+    as unknown as jest.Mocked < ConfigService > ;
     
     const module: TestingModule = await Test.createTestingModule({
       providers: [
