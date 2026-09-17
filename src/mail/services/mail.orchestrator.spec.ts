@@ -7,19 +7,19 @@ jest.mock('nodemailer');
 
 describe('MailOrchestrator', () => {
   let orchestrator: MailOrchestrator;
-  let configService: jest.Mocked < ConfigService > ;
+  let configService: Partial<ConfigService>;
   let sendMailMock: jest.Mock;
-  
+
   beforeEach(async () => {
     sendMailMock = jest.fn().mockResolvedValue({ messageId: 'test-message-id' });
-    
+
     (nodemailer.createTransport as jest.Mock).mockReturnValue({
       sendMail: sendMailMock,
     });
-    
+
     configService = {
       get: jest.fn((key: string) => {
-        const config: Record < string, string > = {
+        const config: Record<string, string> = {
           SMTP_HOST: 'smtp.test.com',
           SMTP_PORT: '587',
           SMTP_USER: 'test@domain.com',
@@ -28,9 +28,8 @@ describe('MailOrchestrator', () => {
         };
         return config[key];
       }),
-    }
-    as unknown as jest.Mocked < ConfigService > ;
-    
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         MailOrchestrator,
@@ -40,18 +39,18 @@ describe('MailOrchestrator', () => {
         },
       ],
     }).compile();
-    
-    orchestrator = module.get < MailOrchestrator > (MailOrchestrator);
+
+    orchestrator = module.get<MailOrchestrator>(MailOrchestrator);
   });
-  
+
   afterEach(() => {
     jest.clearAllMocks();
   });
-  
+
   it('should be defined', () => {
     expect(orchestrator).toBeDefined();
   });
-  
+
   it('should dispatch email with correct payload', async () => {
     const mailOptions = {
       to: 'user@example.com',
@@ -59,9 +58,9 @@ describe('MailOrchestrator', () => {
       html: '<p>New login detected</p>',
       context: { alias: 'TestUser' },
     };
-    
+
     await orchestrator.send(mailOptions);
-    
+
     expect(sendMailMock).toHaveBeenCalledWith(
       expect.objectContaining({
         from: 'noreply@domain.com',
@@ -72,10 +71,10 @@ describe('MailOrchestrator', () => {
       }),
     );
   });
-  
+
   it('should throw exception when transporter fails', async () => {
     sendMailMock.mockRejectedValueOnce(new Error('SMTP Connection Failed'));
-    
+
     await expect(
       orchestrator.send({
         to: 'user@example.com',
