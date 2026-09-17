@@ -51,4 +51,7 @@ jobs:
         run: pnpm test
 
       - name: Docker Build
-        run: docker build -t backend:latest .
+        run: |
+          docker build \
+            --build-arg NODE_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }} \
+            -t backend:latest .
