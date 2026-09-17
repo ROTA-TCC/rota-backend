@@ -104,4 +104,3 @@ async verify2fa(
   const response = this.authMapper.toAuthResponse(user, session);
   return { ...response, message: '2FA verification successful' };
 }
-}
