@@ -33,7 +33,6 @@ export class AuthFacade {
       };
     }
 
-    // Assertion 'as any' para permitir leitura segura de 'user' no retorno da UseCase
     const user = (authResult as any).user;
     const session = await this.sessionService.create(
       user.id,
@@ -52,7 +51,7 @@ export class AuthFacade {
     return { ...response, message: 'Login successful' };
   }
 
-  async refresh(
+    async refresh(
     token: string,
     userAgent: string,
   ): Promise<AuthRefreshResponse> {
@@ -65,6 +64,7 @@ export class AuthFacade {
     return {
       ...response,
       user: this.authMapper.toUserResponse(response.user),
+      message: 'Token refreshed successfully',
     };
   }
 
