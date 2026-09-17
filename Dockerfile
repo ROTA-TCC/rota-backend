@@ -19,7 +19,7 @@ ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/db"
 RUN pnpm prisma generate
 RUN pnpm run build
 
-RUN pnpm prune --prod
+RUN pnpm prune --prod --ignore-scripts
 
 FROM node:22-alpine AS production
 
