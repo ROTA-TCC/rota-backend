@@ -1,6 +1,9 @@
 services:
   api:
-    build: .
+    build:
+      context: .
+      args:
+        NODE_AUTH_TOKEN: ${GITHUB_TOKEN}
     ports:
       - "3000:3000"
     environment:
