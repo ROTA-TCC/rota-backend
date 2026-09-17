@@ -10,6 +10,7 @@ describe('LoginUserUseCase', () => {
   let userService: UserService;
   let securityService: SecurityService;
   let twoFactorService: TwoFactorService;
+  let jwtService: JwtService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -32,7 +33,7 @@ describe('LoginUserUseCase', () => {
         },
         {
           provide: JwtService,
-          useValue: { sign: jest.fn() },
+          useValue: { sign: jest.fn().mockReturnValue('mocked-jwt-token') },
         },
       ],
     }).compile();
@@ -41,11 +42,17 @@ describe('LoginUserUseCase', () => {
     userService = module.get<UserService>(UserService);
     securityService = module.get<SecurityService>(SecurityService);
     twoFactorService = module.get<TwoFactorService>(TwoFactorService);
+    jwtService = module.get<JwtService>(JwtService);
   });
 
   it('should authenticate user successfully', async () => {
     const credentials = { email: 'test@example.com', password: 'password123' };
-    const user = { id: '1', password: 'hash', is2faEnabled: false };
+    const user = {
+      id: '1',
+      email: 'test@example.com',
+      password: 'hash',
+      is2faEnabled: false,
+    };
     (userService.findByEmail as jest.Mock).mockResolvedValue(user);
 
     const result = await useCase.execute(
@@ -55,6 +62,10 @@ describe('LoginUserUseCase', () => {
     );
 
     expect(result.requires2fa).toBe(false);
-    expect(result.user).toEqual(user);
+    expect(result.accessToken).toBe('mocked-jwt-token');
+    expect(jwtService.sign).toHaveBeenCalledWith({
+      sub: user.id,
+      email: user.email,
+    });
   });
 });
