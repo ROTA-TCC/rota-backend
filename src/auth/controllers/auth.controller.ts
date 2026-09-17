@@ -1,12 +1,4 @@
 import { Controller, Post, Body, UseInterceptors } from '@nestjs/common';
-import { AuthFacade } from '../services/auth.facade';
-import { AccountFacade } from '../services/account.facade';
-import { LoginDto, RegisterDto, TwoFactorVerifyDto } from '@ROTA-TCC/types';
-import { SetCookieInterceptor } from '../interceptors/set-cookie.interceptor';
-import { TransformInterceptor } from '../../common/interceptors/transform.interceptor';
-import { RefreshToken } from '../decorators/refresh-token.decorator';
-import { IpAddress } from '../decorators/ip-address.decorator';
-import { UserAgent } from '../decorators/user-agent.decorator';
 import {
   ApiTags,
   ApiOperation,
@@ -19,9 +11,19 @@ import {
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import {
+  LoginDto,
+  RegisterDto,
+  TwoFactorVerifyDto,
   AuthResponse,
   TwoFactorRequiredResponse,
 } from '@ROTA-TCC/types';
+import { AuthFacade } from '../services/auth.facade';
+import { AccountFacade } from '../services/account.facade';
+import { SetCookieInterceptor } from '../interceptors/set-cookie.interceptor';
+import { TransformInterceptor } from '../../common/interceptors/transform.interceptor';
+import { RefreshToken } from '../decorators/refresh-token.decorator';
+import { IpAddress } from '../decorators/ip-address.decorator';
+import { UserAgent } from '../decorators/user-agent.decorator';
 
 @ApiTags('Autenticação')
 @Controller('auth')
@@ -76,7 +78,10 @@ export class AuthController {
   @ApiUnauthorizedResponse({
     description: 'Refresh Token inválido ou expirado.',
   })
-  async refresh(@RefreshToken() token: string, @UserAgent() userAgent: string) {
+  async refresh(
+    @RefreshToken() token: string,
+    @UserAgent() userAgent: string,
+  ) {
     return this.authFacade.refresh(token, userAgent);
   }
 
