@@ -54,7 +54,7 @@ export class LoginUserUseCase {
     );
 
     if (isNewDevice) {
-      await this.twoFactorService.logDevice(user.id, userAgent, ipAddress);
+      await this.twoFactorService.logDevice(user.id, userAgent);
     }
 
     const accessToken = this.jwtService.sign({

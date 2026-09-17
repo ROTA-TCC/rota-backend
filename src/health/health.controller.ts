@@ -4,7 +4,7 @@ import {
   HealthCheck,
   MemoryHealthIndicator,
   HealthIndicatorResult,
-  HealthCheckException,
+  HealthCheckError,
 } from '@nestjs/terminus';
 import { PrismaService } from '../prisma/prisma.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -17,7 +17,7 @@ export class HealthController {
     private prisma: PrismaService,
     private memory: MemoryHealthIndicator,
   ) {}
-  
+
   @Get()
   @HealthCheck()
   @ApiOperation({ summary: 'Verifica a saúde do sistema' })
@@ -27,25 +27,25 @@ export class HealthController {
       () => this.memory.checkHeap('memory_heap', 300 * 1024 * 1024),
     ]);
   }
-  
-  private async checkDatabase(): Promise < HealthIndicatorResult > {
-    const timeoutMs = 15000;
-    
+
+  private async checkDatabase(): Promise<HealthIndicatorResult> {
+    const timeoutMs = 5000;
+
     const timeoutPromise = new Promise((_, reject) =>
       setTimeout(() => reject(new Error('Database check timed out')), timeoutMs),
     );
-    
+
     try {
       await Promise.race([
         this.prisma.$queryRaw`SELECT 1`,
         timeoutPromise,
       ]);
-      
+
       return { database: { status: 'up' } };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Database ping failed';
-      
-      throw new HealthCheckException('Database check failed', {
+
+      throw new HealthCheckError('Database check failed', {
         database: { status: 'down', message },
       });
     }
