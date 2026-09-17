@@ -20,15 +20,16 @@ describe('MailOrchestrator', () => {
     configService = {
       get: jest.fn((key: string) => {
         const config: Record < string, string > = {
-          MAIL_HOST: 'smtp.test.com',
-          MAIL_PORT: '587',
-          MAIL_USER: 'test@domain.com',
-          MAIL_PASS: 'password',
-          MAIL_FROM: 'noreply@domain.com',
+          SMTP_HOST: 'smtp.test.com',
+          SMTP_PORT: '587',
+          SMTP_USER: 'test@domain.com',
+          SMTP_PASS: 'password',
+          SMTP_FROM_EMAIL: 'noreply@domain.com',
         };
         return config[key];
       }),
-    } as any;
+    }
+    as any;
     
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -56,14 +57,18 @@ describe('MailOrchestrator', () => {
       to: 'user@example.com',
       subject: 'Security Alert',
       html: '<p>New login detected</p>',
+      context: { alias: 'TestUser' },
     };
     
-    await orchestrator.sendMail(mailOptions);
+    await orchestrator.send(mailOptions);
     
     expect(sendMailMock).toHaveBeenCalledWith(
       expect.objectContaining({
+        from: 'noreply@domain.com',
         to: 'user@example.com',
         subject: 'Security Alert',
+        text: 'Hello TestUser!',
+        html: '<p>New login detected</p>',
       }),
     );
   });
@@ -72,11 +77,12 @@ describe('MailOrchestrator', () => {
     sendMailMock.mockRejectedValueOnce(new Error('SMTP Connection Failed'));
     
     await expect(
-      orchestrator.sendMail({
+      orchestrator.send({
         to: 'user@example.com',
         subject: 'Test',
         html: 'Content',
+        context: { alias: 'TestUser' },
       }),
-    ).rejects.toThrow('SMTP Connection Failed');
+    ).rejects.toThrow('Email sending failed.');
   });
 });
