@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MailService } from '../mail/services/mail.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { MailService } from '../../mail/services/mail.service';
+import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class SecurityMonitorService {
@@ -41,7 +41,7 @@ export class SecurityMonitorService {
   ): Promise<void> {
     this.logger.log(`Ação de segurança: ${action} para usuário ${userId}`);
     await this.prisma.auditLog.create({
-      data: { userId, action, metadata },
+      data: { userId, action, details: metadata },
     });
   }
 }
