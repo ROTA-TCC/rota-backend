@@ -5,6 +5,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PasswordResetRequestedEvent } from '../events/password-reset-requested.event';
 import { nanoid } from 'nanoid';
 
+const PASSWORD_RESET_EXPIRATION_MS = 60 * 60 * 1000; // 1 hour
+
 @Injectable()
 export class RequestPasswordResetUseCase {
   constructor(
@@ -18,13 +20,20 @@ export class RequestPasswordResetUseCase {
     if (!user) throw new NotFoundException('User not found');
 
     const token = nanoid(32);
-    const expiresAt = new Date(Date.now() + 3600000); // 1 hora
+    const expiresAt = new Date(Date.now() + PASSWORD_RESET_EXPIRATION_MS);
 
     await this.passwordResetRepository.create(user.id, token, expiresAt);
 
     this.eventEmitter.emit(
       'password.reset.requested',
-      new PasswordResetRequestedEvent(user.email, token, requestId),
+      new PasswordResetRequestedEvent(
+        user.email,
+        user.alias,
+        token,
+        `https://app.example.com/reset?token=${token}`,
+        requestId,
+      ),
     );
+
   }
 }

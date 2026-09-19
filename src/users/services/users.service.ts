@@ -31,7 +31,12 @@ export class UserService {
 
     this.eventEmitter.emit(
       'user.created',
-      new UserCreatedEvent(user.email, verificationToken),
+      new UserCreatedEvent(
+        user.email,
+        user.alias,
+        verificationToken,
+        `https://app.example.com/verify?token=${verificationToken}`, // URL exemplo
+      ),
     );
 
     return user;

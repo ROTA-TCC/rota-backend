@@ -1,18 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
-import { MailOptions } from '../mail.interfaces';
+import { MailOptions } from '../interfaces/mail.interfaces';
+import {
+  WelcomeEmailContext,
+  VerifyEmailContext,
+  PasswordResetContext,
+  TwoFactorCodeContext,
+  SecurityAlertContext,
+} from '../interfaces/email-context.interfaces';
 
 @Injectable()
 export class MailService {
   constructor(@InjectQueue('mail') private mailQueue: Queue) {}
 
-  async sendWelcomeEmail(to: string, alias: string, requestId?: string) {
+  async sendWelcomeEmail(to: string, context: WelcomeEmailContext, requestId?: string) {
     const options: MailOptions = {
       to,
       subject: 'Bem-vindo ao Nosso Sistema!',
       template: 'welcome',
-      context: { alias },
+      context,
       requestId,
     };
 
@@ -25,12 +32,12 @@ export class MailService {
     });
   }
 
-  async sendVerificationEmail(to: string, token: string, requestId?: string) {
+  async sendVerificationEmail(to: string, context: VerifyEmailContext, requestId?: string) {
     const options: MailOptions = {
       to,
       subject: 'Verifique seu e-mail',
       template: 'verify-email',
-      context: { token },
+      context,
       requestId,
     };
 
@@ -40,12 +47,12 @@ export class MailService {
     });
   }
 
-  async sendPasswordResetEmail(to: string, token: string, requestId?: string) {
+  async sendPasswordResetEmail(to: string, context: PasswordResetContext, requestId?: string) {
     const options: MailOptions = {
       to,
       subject: 'Redefinição de Senha',
       template: 'password-reset',
-      context: { token },
+      context,
       requestId,
     };
 
@@ -55,12 +62,12 @@ export class MailService {
     });
   }
 
-  async send2faCode(to: string, code: string, requestId?: string) {
+  async send2faCode(to: string, context: TwoFactorCodeContext, requestId?: string) {
     const options: MailOptions = {
       to,
       subject: 'Seu código de verificação 2FA',
       template: 'two-factor-code',
-      context: { code },
+      context,
       requestId,
     };
 
@@ -70,12 +77,12 @@ export class MailService {
     });
   }
 
-  async sendSecurityAlert(to: string, alertType: string, requestId?: string) {
+  async sendSecurityAlert(to: string, context: SecurityAlertContext, requestId?: string) {
     const options: MailOptions = {
       to,
       subject: 'Alerta de Segurança',
       template: 'security-alert',
-      context: { alertType },
+      context,
       requestId,
     };
 

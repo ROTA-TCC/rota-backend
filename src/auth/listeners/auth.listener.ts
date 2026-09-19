@@ -19,7 +19,12 @@ export class AuthListener {
     try {
       await this.mailService.sendVerificationEmail(
         event.email,
-        event.verificationToken,
+        {
+          alias: event.alias,
+          token: event.verificationToken,
+          verifyUrl: event.verifyUrl,
+          expirationTime: '30 minutos',
+        },
         event.requestId,
       );
     } catch (error) {
@@ -38,7 +43,12 @@ export class AuthListener {
     try {
       await this.mailService.sendPasswordResetEmail(
         event.email,
-        event.token,
+        {
+          alias: event.alias,
+          token: event.token,
+          resetUrl: event.resetUrl,
+          expirationTime: '15 minutos',
+        },
         event.requestId,
       );
     } catch (error) {
@@ -57,7 +67,10 @@ export class AuthListener {
     try {
       await this.mailService.send2faCode(
         event.email,
-        event.code,
+        {
+          code: event.code,
+          expirationTime: '5 minutos',
+        },
         event.requestId,
       );
     } catch (error) {

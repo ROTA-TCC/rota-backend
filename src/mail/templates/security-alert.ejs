@@ -1,9 +1,18 @@
 <!DOCTYPE html>
 <html>
 <body>
-  <h1>Alerta de Segurança</h1>
-  <p>Detectamos uma nova atividade em sua conta:</p>
-  <p><strong><%= alertType %></strong></p>
-  <p>Se não foi você, por favor, altere sua senha imediatamente.</p>
+  <h1>Olá, <%= alias %>!</h1>
+  <p>Detectamos um alerta de segurança em sua conta: <strong><%= alertType %></strong></p>
+  <p>Detalhes da atividade:</p>
+  <ul>
+    <li><strong>Data/Hora:</strong> <%= timestamp %></li>
+    <li><strong>Dispositivo:</strong> <%= device %></li>
+    <li><strong>IP:</strong> <%= ipAddress %></li>
+    <% if (typeof location !== 'undefined') { %>
+      <li><strong>Localização:</strong> <%= location %></li>
+    <% } %>
+  </ul>
+  <p>Se esta atividade não foi realizada por você, proteja sua conta clicando abaixo:</p>
+  <p><a href="<%= secureAccountUrl %>">Proteger Minha Conta</a></p>
 </body>
 </html>

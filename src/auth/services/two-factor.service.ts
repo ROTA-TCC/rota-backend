@@ -3,6 +3,8 @@ import { UserRepository } from '../../users/repositories/user.repository';
 import { TwoFactorStrategyRegistry } from './two-factor-strategy.registry';
 import { DeviceMonitorService } from './device-monitor.service';
 
+const TWO_FACTOR_EXPIRATION_MS = 5 * 60 * 1000;
+
 @Injectable()
 export class TwoFactorService {
   private readonly logger = new Logger(TwoFactorService.name);
@@ -19,7 +21,7 @@ export class TwoFactorService {
   ): Promise<void> {
     const strategy = this.strategyRegistry.getStrategy(strategyName);
     const code = await strategy.generateCode(user.id);
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutos
+    const expiresAt = new Date(Date.now() + TWO_FACTOR_EXPIRATION_MS);
 
     await this.userRepository.update2faCode(user.id, code, expiresAt);
     await strategy.sendCode(user.email, code);

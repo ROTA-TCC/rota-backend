@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html>
 <body>
-  <h1>Verificação de E-mail</h1>
-  <p>Use o token abaixo para verificar sua conta:</p>
-  <p><strong><%= token %></strong></p>
+  <h1>Olá, <%= alias %>!</h1>
+  <p>Por favor, confirme seu e-mail para continuar utilizando nossa plataforma.</p>
+  <p>Você pode clicar no link abaixo ou usar o código de verificação:</p>
+  <p><strong>Código: <%= token %></strong></p>
+  <p><a href="<%= verifyUrl %>">Verificar Conta</a></p>
+  <p>Este link expira em <%= expirationTime %>.</p>
 </body>
 </html>

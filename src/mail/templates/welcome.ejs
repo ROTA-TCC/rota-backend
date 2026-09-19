@@ -16,13 +16,13 @@
 <body>
     <div class="container">
         <h1>Olá, <%= alias %>! 👋</h1>
-        <p>Estamos muito felizes em ter você conosco. Sua conta foi criada com sucesso!</p>
+        <p>Estamos muito felizes em ter você conosco na <strong><%= companyName %></strong>.</p>
         <p>No nosso app, você terá acesso a todas as ferramentas necessárias para alavancar sua produtividade e gerenciar seus projetos de forma inteligente.</p>
-        <a href="#" class="button">Começar Agora</a>
+        <a href="<%= dashboardUrl %>" class="button">Acessar meu Dashboard</a>
         <div class="footer">
             <p>Você recebeu este e-mail porque se cadastrou em nosso sistema.<br>
             Se você não realizou este cadastro, por favor ignore este e-mail.</p>
-            <p>&copy; 2026 Nossa Empresa. Todos os direitos reservados.</p>
+            <p>&copy; 2026 <%= companyName %>. Todos os direitos reservados.</p>
         </div>
     </div>
 </body>

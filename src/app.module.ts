@@ -12,6 +12,7 @@ import { PaymentModule } from './payment/payment.module';
 import { HealthModule } from './health/health.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
+import { getRedisConfig } from './common/utils/redis-config.util';
 
 @Module({
   imports: [
@@ -22,12 +23,23 @@ import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
       isGlobal: true,
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        store: redisStore,
-        host: configService.get('REDIS_HOST', 'localhost'),
-        port: configService.get('REDIS_PORT', 6379),
-        ttl: 600, // 10 minutos
-      }),
+      useFactory: (configService: ConfigService) => {
+        const redisConfig = getRedisConfig(configService);
+        return {
+          store: redisStore,
+          ...redisConfig,
+          ttl: 600, // 10 minutos
+          socket: {
+            ...redisConfig.socket,
+            reconnectStrategy: (retries: number) => {
+              if (retries > 5) {
+                return new Error('Max retries reached');
+              }
+              return Math.min(retries * 100, 3000);
+            },
+          },
+        };
+      },
     }),
     LoggerModule.forRoot({
       pinoHttp: {

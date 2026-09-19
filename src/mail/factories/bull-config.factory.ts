@@ -1,48 +1,32 @@
 import { ConfigService } from '@nestjs/config';
-import { ConnectionOptions } from 'bullmq';
+import { getRedisConfig } from '../../common/utils/redis-config.util';
 
 export const bullConfigFactory = (config: ConfigService) => {
-  const url = config.get<string>('REDIS_URL');
+  const redisConfig = getRedisConfig(config);
+  
+  const connection: any = {};
 
-  if (url) {
-    return { connection: getUrlConnectionOptions(url) };
+  if (redisConfig.url) {
+    connection.url = redisConfig.url;
+  } else if (redisConfig.socket) {
+    connection.host = redisConfig.socket.host;
+    connection.port = redisConfig.socket.port;
+    connection.password = redisConfig.password;
   }
 
-  return { connection: getHostConnectionOptions(config) };
+  if (redisConfig.socket?.tls) {
+    connection.tls = { rejectUnauthorized: false };
+  }
+
+  return { 
+    connection: { 
+      ...connection, 
+      maxRetriesPerRequest: null,
+      enableReadyCheck: false,
+      retryStrategy(times: number) {
+        const delay = Math.min(times * 1000, 5000);
+        return delay;
+      }
+    } 
+  };
 };
-
-function getUrlConnectionOptions(url: string): ConnectionOptions {
-  const options: ConnectionOptions = {
-    url,
-    maxRetriesPerRequest: null,
-  };
-
-  if (url.startsWith('rediss://')) {
-    options.tls = {
-      rejectUnauthorized: false,
-    };
-  }
-
-  return options;
-}
-
-function getHostConnectionOptions(config: ConfigService): ConnectionOptions {
-  const host = config.get<string>('REDIS_HOST', 'localhost');
-  const port = config.get<number>('REDIS_PORT', 6379);
-  const password = config.get<string>('REDIS_PASSWORD');
-
-  const options: ConnectionOptions = {
-    host,
-    port,
-    password,
-    maxRetriesPerRequest: null,
-  };
-
-  if (host !== 'localhost' && host !== '127.0.0.1') {
-    options.tls = {
-      rejectUnauthorized: false,
-    };
-  }
-
-  return options;
-}

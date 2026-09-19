@@ -1,12 +1,16 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { Logger } from '@nestjs/common';
 import { MailOrchestrator } from '../services/mail.orchestrator';
-import { MailOptions } from '../mail.interfaces';
+import { MailOptions } from '../interfaces/mail.interfaces';
 import { TemplateService } from '../services/template.service';
 import * as Sentry from '@sentry/nestjs';
 
-@Processor('mail')
+@Processor('mail', {
+  drainDelay: 60, // 60 segundos de espera quando a fila esvaziar
+  stalledInterval: 60000, // Verificar jobs travados a cada 1 minuto
+  lockDuration: 300000, // Aumenta o tempo do lock (5 min) para evitar renovações constantes
+})
 export class MailProcessor extends WorkerHost {
   private readonly logger = new Logger(MailProcessor.name);
 
@@ -15,6 +19,18 @@ export class MailProcessor extends WorkerHost {
     private templateService: TemplateService,
   ) {
     super();
+  }
+
+  // Intercepta erros globais do Worker
+  @OnWorkerEvent('error')
+  onError(err: Error) {
+    if (err.message?.includes('max requests limit exceeded')) {
+      this.logger.error('Limite do Upstash atingido. Pausando o worker para parar o loop...');
+      
+      // Pausa a execução do Worker para interromper o polling
+      // @ts-ignore: Accessing worker directly
+      this.worker.pause();
+    }
   }
 
   async process(job: Job<MailOptions, any, string>): Promise<any> {
