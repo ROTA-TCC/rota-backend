@@ -90,5 +90,5 @@ Este projeto utiliza pacotes privados hospedados no **GitHub Packages** sob o es
 ## O O que o arquivo faz
 
 ```ini
-@ROTA-TCC:registry=[https://npm.pkg.github.com/](https://npm.pkg.github.com/)
-//[npm.pkg.github.com/:_authToken=$](https://npm.pkg.github.com/:_authToken=$){NODE_AUTH_TOKEN}
+@ROTA-TCC:registry=https://npm.pkg.github.com/
+//npm.pkg.github.com/:_authToken=ghp_SEU_TOKEN
