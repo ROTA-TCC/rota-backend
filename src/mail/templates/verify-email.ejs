@@ -1,8 +1,100 @@
 <!DOCTYPE html>
-<html>
-<body>
-  <h1>Verificação de E-mail</h1>
-  <p>Use o token abaixo para verificar sua conta:</p>
-  <p><strong><%= token %></strong></p>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Verificação de E-mail</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #ffffff; font-family: Arial, Helvetica, sans-serif; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
+
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse; background-color: #ffffff; width: 100%;">
+    <tr>
+      <td align="center" style="padding: 0;">
+        
+        <table border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; max-width: 600px; width: 100%;">
+          
+          <tr>
+            <td align="center" style="background-color: #000000; padding: 25px 20px;">
+              <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+                <tr>
+                  <td valign="middle" style="padding-right: 12px;">
+                    <img src="../../../assets/email/logo-preta.jpg" alt="Logo Rota" width="40" height="40" style="display: block; border: 0; outline: none; border-radius: 8px;">
+                  </td>
+                  <td valign="middle" style="font-family: Arial, sans-serif; font-size: 28px; font-weight: bold; color: #ffffff; letter-spacing: 1px;">
+                    Rota
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding: 40px 30px 20px 30px; text-align: center;">
+              
+              <h1 style="margin: 0 0 25px 0; font-size: 32px; font-weight: normal; color: #222222; font-family: Arial, sans-serif;">
+                Verificação de E-mail
+              </h1>
+
+              <p style="margin: 0 0 20px 0; font-size: 18px; font-weight: bold; color: #222222;">
+                Olá, <%= alias %>!
+              </p>
+
+              <p style="margin: 0 0 25px 0; font-size: 15px; line-height: 22px; color: #555555; text-align: justify; text-justify: inter-word;">
+                Obrigado por se cadastrar! Para confirmar seu endereço de e-mail e ativar sua conta, utilize o código de verificação abaixo ou clique no botão para confirmar diretamente.
+              </p>
+
+              <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin: 0 auto 25px auto;">
+                <tr>
+                  <td align="center" style="background-color: #f4f6f8; border: 2px dashed #cccccc; padding: 15px 30px; border-radius: 6px;">
+                    <span style="font-family: 'Courier New', Courier, monospace; font-size: 28px; font-weight: bold; color: #111111; letter-spacing: 6px; display: inline-block;">
+                      <%= token %>
+                    </span>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 0 0 25px 0; font-size: 14px; color: #d9534f; font-weight: bold;">
+                Este código expira em <%= expirationTime %>.
+              </p>
+
+              <p style="margin: 0 0 20px 0; font-size: 15px; color: #555555;">
+                Clique no botão abaixo para verificar sua conta automaticamente:
+              </p>
+
+              <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; margin: 0 auto 30px auto;">
+                <tr>
+                  <td align="center" bgcolor="#FFC800" style="padding: 14px 28px;">
+                    <a href="<%= verifyUrl %>" target="_blank" style="font-size: 14px; font-family: Arial, sans-serif; color: #222222; text-decoration: none; font-weight: bold; letter-spacing: 0.5px; display: inline-block; text-transform: uppercase;">
+                      VERIFICAR MINHA CONTA
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 0 0 0 0; font-size: 12px; line-height: 18px; color: #888888; text-align: center;">
+                Se o botão não funcionar, copie e cole o link abaixo no seu navegador:<br>
+                <a href="<%= verifyUrl %>" target="_blank" style="color: #0066cc; text-decoration: underline; word-break: break-all;">
+                  <%= verifyUrl %>
+                </a>
+              </p>
+
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding: 20px 30px 40px 30px; text-align: center; border-top: 1px solid #eeeeee;">
+              <p style="margin: 0; font-size: 13px; line-height: 18px; color: #666666;">
+                Este e-mail foi enviado automaticamente. Caso não tenha solicitado esta verificação, pode ignorar esta mensagem com segurança.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
 </body>
 </html>
