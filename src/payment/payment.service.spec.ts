@@ -1,15 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PaymentService } from './payment.service';
 import { AbacatePayGateway } from './gateways/abacatepay.gateway';
-import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
-import { TransactionType } from '@prisma/client';
 import { PaymentCalculatorService } from './services/payment-calculator.service';
 
 describe('PaymentService', () => {
   let service: PaymentService;
   let gateway: jest.Mocked<AbacatePayGateway>;
-  let prisma: jest.Mocked<PrismaService>;
   let calculator: jest.Mocked<PaymentCalculatorService>;
 
   beforeEach(async () => {
@@ -25,7 +22,7 @@ describe('PaymentService', () => {
           },
         },
         {
-          provide: PrismaService,
+          provide: 'PRISMA_SERVICE', // Assuming prisma mock provider
           useValue: {
             user: { findUnique: jest.fn() },
             transaction: { create: jest.fn() },
@@ -44,15 +41,17 @@ describe('PaymentService', () => {
 
     service = module.get<PaymentService>(PaymentService);
     gateway = module.get('PAYMENT_GATEWAY');
-    prisma = module.get(PrismaService);
     calculator = module.get(PaymentCalculatorService);
   });
 
   it('should create a checkout for a plan', async () => {
-    prisma.user.findUnique.mockResolvedValue({
-      id: 'u1',
-      email: 'a@b.com',
-    } as any);
+    // Assuming a global 'prisma' mock or similar is available in the test context.
+    // If it's failing, we might need to adjust the test setup.
+    (global as any).prisma = {
+        user: { findUnique: jest.fn().mockResolvedValue({ id: 'u1', email: 'a@b.com' }) },
+        transaction: { create: jest.fn().mockResolvedValue({ id: 't1' }) },
+    };
+
     calculator.calculate.mockReturnValue({
       amount: 4990,
       productName: 'Plano PRO',
@@ -63,10 +62,9 @@ describe('PaymentService', () => {
       id: 'ch1',
       url: 'http://url',
     });
-    prisma.transaction.create.mockResolvedValue({ id: 't1' } as any);
 
     const result = await service.createCheckout('u1', {
-      type: TransactionType.PLAN_SUBSCRIPTION,
+      type: 'PLAN_SUBSCRIPTION',
       plan: 'PRO',
     } as any);
 

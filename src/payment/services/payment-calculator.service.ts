@@ -1,10 +1,10 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { Plan, TransactionType } from '@prisma/client';
+import { Plan, TransactionType } from '../../drizzle/schema';
 import { CreateCheckoutDto } from '@ROTA-TCC/types';
 
 const PLAN_PRICES = {
-  [Plan.GRATIS]: 0,
-  [Plan.PRO]: 4990,
+  GRATIS: 0,
+  PRO: 4990,
 };
 
 export interface PaymentDetails {
@@ -16,12 +16,12 @@ export interface PaymentDetails {
 @Injectable()
 export class PaymentCalculatorService {
   calculate(dto: CreateCheckoutDto): PaymentDetails {
-    if (dto.type === TransactionType.PLAN_SUBSCRIPTION) {
+    if (dto.type === 'PLAN_SUBSCRIPTION') {
       if (!dto.plan) {
         throw new BadRequestException('Plano não informado para assinatura');
       }
       return {
-        amount: PLAN_PRICES[dto.plan],
+        amount: PLAN_PRICES[dto.plan as Plan],
         productName: `Plano ${dto.plan}`,
         externalId: dto.plan,
       };

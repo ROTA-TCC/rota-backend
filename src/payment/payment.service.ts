@@ -5,15 +5,17 @@ import {
   Inject,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '../prisma/prisma.service';
 import { CreateCheckoutDto } from '@ROTA-TCC/types';
-import { Plan, TransactionType, TransactionStatus } from '@prisma/client';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { eq, sql } from 'drizzle-orm';
+import { DRIZZLE } from '../drizzle/drizzle.module';
+import * as schema from '../drizzle/schema';
 import { PAYMENT_GATEWAY } from './interfaces/payment-gateway.interface';
 import type { IPaymentGateway } from './interfaces/payment-gateway.interface';
 import { PaymentCalculatorService } from './services/payment-calculator.service';
 
 type TransactionMetadata = {
-  plan?: Plan;
+  plan?: 'GRATIS' | 'PRO';
 };
 
 @Injectable()
@@ -21,14 +23,14 @@ export class PaymentService {
   private readonly logger = new Logger(PaymentService.name);
 
   constructor(
+    @Inject(DRIZZLE) private readonly db: NodePgDatabase<typeof schema>,
     @Inject(PAYMENT_GATEWAY) private readonly gateway: IPaymentGateway,
     private readonly configService: ConfigService,
-    private readonly prisma: PrismaService,
     private readonly calculator: PaymentCalculatorService,
   ) {}
 
   async createCheckout(userId: string, dto: CreateCheckoutDto) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const [user] = await this.db.select().from(schema.users).where(eq(schema.users.id, userId));
     if (!user) throw new BadRequestException('Usuário não encontrado');
 
     const { amount, productName, externalId } = this.calculator.calculate(dto);
@@ -39,7 +41,7 @@ export class PaymentService {
       amount,
     );
 
-    const isSubscription = dto.type === TransactionType.PLAN_SUBSCRIPTION;
+    const isSubscription = dto.type === 'PLAN_SUBSCRIPTION';
     const items = [{ id: product.id, quantity: 1 }];
     const customer = {
       email: user.email,
@@ -58,15 +60,14 @@ export class PaymentService {
       ? await this.gateway.createSubscription(items, customer, urls)
       : await this.gateway.createCheckout(items, customer, urls);
 
-    await this.prisma.transaction.create({
-      data: {
+    await this.db.insert(schema.transaction).values({
         externalId: checkoutData.id,
         userId,
         amount,
-        type: dto.type,
-        status: TransactionStatus.PENDING,
+        type: 'PLAN_SUBSCRIPTION',
+        status: 'PENDING',
         metadata: { plan: dto.plan },
-      },
+        updatedAt: new Date(),
     });
 
     return { url: checkoutData.url };
@@ -102,33 +103,26 @@ export class PaymentService {
   }
 
   private async processSuccessfulPayment(externalId: string) {
-    const transaction = await this.prisma.transaction.findUnique({
-      where: { externalId },
-      include: { user: true },
-    });
+    const [transaction] = await this.db.select().from(schema.transaction).where(eq(schema.transaction.externalId, externalId));
 
     if (!transaction) {
       this.logger.error(`Transação ${externalId} não encontrada no banco`);
       return;
     }
 
-    if (transaction.status === TransactionStatus.PAID) return;
+    if (transaction.status === 'PAID') return;
 
     const metadata = transaction.metadata as TransactionMetadata;
 
-    await this.prisma.$transaction(async (tx) => {
-      await tx.transaction.update({
-        where: { id: transaction.id },
-        data: { status: TransactionStatus.PAID },
-      });
+    await this.db.transaction(async (tx) => {
+      await tx.update(schema.transaction)
+        .set({ status: 'PAID' })
+        .where(eq(schema.transaction.id, transaction.id));
 
-      if (transaction.type === TransactionType.PLAN_SUBSCRIPTION) {
-        if (metadata.plan) {
-          await tx.user.update({
-            where: { id: transaction.userId },
-            data: { plan: metadata.plan },
-          });
-        }
+      if (transaction.type === 'PLAN_SUBSCRIPTION' && metadata.plan) {
+        await tx.update(schema.users)
+            .set({ plan: metadata.plan === 'PRO' ? 'PRO' : 'GRATIS' })
+            .where(eq(schema.users.id, transaction.userId));
       }
     });
 

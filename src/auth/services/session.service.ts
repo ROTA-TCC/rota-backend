@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { SessionValidatorPolicy } from '../policies/session-validator.policy';
 import { nanoid } from 'nanoid';
 
@@ -17,6 +17,7 @@ export class SessionService {
   constructor(
     private repository: SessionRepository,
     private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
 
   async create(
@@ -38,8 +39,17 @@ export class SessionService {
       expiresAt,
     });
 
+    const secret = this.configService.get<string>('JWT_SECRET');
+
+    if (!secret) {
+      throw new Error('JWT_SECRET is not configured');
+    }
+
     return {
-      accessToken: this.jwtService.sign({ sub: userId, role, isVerified }),
+      accessToken: this.jwtService.sign(
+        { sub: userId, role, isVerified },
+        { secret, expiresIn: '15m' },
+      ),
       refreshToken,
       expiresAt,
     };
@@ -55,20 +65,31 @@ export class SessionService {
     const newRefreshToken = nanoid(64);
     const expiresAt = this.calculateExpiration(false);
 
-    await this.repository.update(session!.id, {
+    await this.repository.update(session.id, {
       refreshToken: newRefreshToken,
       expiresAt,
     });
 
+    const secret = this.configService.get<string>('JWT_SECRET');
+
+    if (!secret) {
+      throw new Error('JWT_SECRET is not configured');
+    }
+
+    const user = session.user;
+
     return {
-      accessToken: this.jwtService.sign({
-        sub: session!.userId,
-        role: (session!.user as any).role,
-        isVerified: (session!.user as any).isVerified,
-      }),
+      accessToken: this.jwtService.sign(
+        {
+          sub: session.userId,
+          role: user?.role,
+          isVerified: user?.isVerified,
+        },
+        { secret, expiresIn: '15m' },
+      ),
       refreshToken: newRefreshToken,
       expiresAt,
-      user: session!.user,
+      user: session.user,
     };
   }
 

@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Inject } from '@nestjs/common';
 import {
   HealthCheckService,
   HealthCheck,
@@ -6,7 +6,10 @@ import {
   HealthIndicatorResult,
   HealthCheckError,
 } from '@nestjs/terminus';
-import { PrismaService } from '../prisma/prisma.service';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { sql } from 'drizzle-orm';
+import { DRIZZLE } from '../drizzle/drizzle.module';
+import * as schema from '../drizzle/schema';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Health')
@@ -14,7 +17,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 export class HealthController {
   constructor(
     private health: HealthCheckService,
-    private prisma: PrismaService,
+    @Inject(DRIZZLE) private db: NodePgDatabase<typeof schema>,
     private memory: MemoryHealthIndicator,
   ) {}
 
@@ -37,7 +40,7 @@ export class HealthController {
 
     try {
       await Promise.race([
-        this.prisma.$queryRaw`SELECT 1`,
+        this.db.execute(sql`SELECT 1`),
         timeoutPromise,
       ]);
 

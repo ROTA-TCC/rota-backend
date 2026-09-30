@@ -1,22 +1,23 @@
-import { Controller, Post, Body, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Body, BadRequestException, Inject } from '@nestjs/common';
 import { PaymentService } from './payment.service';
-import { PrismaService } from '../prisma/prisma.service';
 import * as crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import * as schema from '../drizzle/schema';
+import { DRIZZLE } from '../drizzle/drizzle.module';
+import { eq } from 'drizzle-orm';
 
 @Controller('payment-test')
 export class PaymentTestController {
   constructor(
     private readonly paymentService: PaymentService,
-    private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
+    @Inject(DRIZZLE) private readonly db: NodePgDatabase<typeof schema>,
   ) {}
 
   @Post('force-confirm')
   async forceConfirm(@Body('externalId') externalId: string) {
-    const transaction = await this.prisma.transaction.findUnique({
-      where: { externalId },
-    });
+    const [transaction] = await this.db.select().from(schema.transaction).where(eq(schema.transaction.externalId, externalId));
 
     if (!transaction)
       throw new BadRequestException('Transação não encontrada no seu banco');

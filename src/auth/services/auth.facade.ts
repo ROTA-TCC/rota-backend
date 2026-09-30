@@ -3,6 +3,7 @@ import { LoginUserUseCase } from '../use-cases/login-user.use-case';
 import { SessionService } from '../services/session.service';
 import { AuthMapper } from '../mappers/auth.mapper';
 import { TwoFactorService } from '../services/two-factor.service';
+import { UsersService } from '../../users/services/users.service';
 
 import { 
   LoginDto, 
@@ -17,6 +18,7 @@ export class AuthFacade {
     private readonly sessionService: SessionService,
     private readonly authMapper: AuthMapper,
     private readonly twoFactorService: TwoFactorService,
+    private readonly userService: UsersService,
   ) {}
 
   async login(credentials: LoginDto, ipAddress: string, userAgent: string) {
@@ -33,7 +35,11 @@ export class AuthFacade {
       };
     }
 
-    const user = (authResult as any).user;
+    const user = await this.userService.findByEmail(credentials.email);
+    if (!user) {
+      throw new UnauthorizedException('E-mail ou senha inválidos');
+    }
+
     const session = await this.sessionService.create(
       user.id,
       ipAddress,

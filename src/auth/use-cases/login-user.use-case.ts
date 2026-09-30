@@ -1,5 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { UserService } from '../../users/services/users.service';
+import { UsersService } from '../../users/services/users.service';
 import { SecurityService } from '../services/security.service';
 import { TwoFactorService } from '../services/two-factor.service';
 import { JwtService } from '@nestjs/jwt';
@@ -10,7 +10,7 @@ import { Password } from '../../common/domain/value-objects/password.vo';
 @Injectable()
 export class LoginUserUseCase {
   constructor(
-    private readonly userService: UserService,
+    private readonly userService: UsersService,
     private readonly securityService: SecurityService,
     private readonly twoFactorService: TwoFactorService,
     private readonly jwtService: JwtService,

@@ -1,17 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SessionRepository } from './session.repository';
-import { PrismaService } from '../../prisma/prisma.service';
 
 describe('SessionRepository', () => {
   let repository: SessionRepository;
-  let prisma: jest.Mocked<PrismaService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         SessionRepository,
         {
-          provide: PrismaService,
           useValue: {
             session: {
               create: jest.fn(),
@@ -25,7 +22,6 @@ describe('SessionRepository', () => {
     }).compile();
 
     repository = module.get<SessionRepository>(SessionRepository);
-    prisma = module.get(PrismaService);
   });
 
   it('should create a session', async () => {

@@ -7,15 +7,9 @@ import {
   Logger,
 } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
-import { Prisma } from '@prisma/client';
 import * as Sentry from '@sentry/nestjs';
 import { DomainError } from '../domain/errors/domain.error';
 import { Request } from 'express';
-
-export const PrismaErrorCode = {
-  UniqueConstraintFailed: 'P2002',
-  RecordNotFound: 'P2025',
-} as const;
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -45,22 +39,24 @@ export class AllExceptionsFilter implements ExceptionFilter {
           : { message: response };
       message = responseBody.message || exception.message;
       errorCode = responseBody.error || 'HTTP_ERROR';
-    } else if (exception instanceof Prisma.PrismaClientKnownRequestError) {
-      switch (exception.code) {
-        case PrismaErrorCode.UniqueConstraintFailed:
+    } else if ((exception as any)?.code && (exception as any)?.code.startsWith('23')) {
+      // Postgres error codes starting with 23 are constraint violations
+      const error = exception as any;
+      switch (error.code) {
+        case '23505':
           httpStatus = HttpStatus.CONFLICT;
           message = 'O registro já existe.';
           errorCode = 'UNIQUE_CONSTRAINT_FAILED';
           break;
-        case PrismaErrorCode.RecordNotFound:
-          httpStatus = HttpStatus.NOT_FOUND;
-          message = 'Registro não encontrado.';
-          errorCode = 'NOT_FOUND';
+        case '23503': // Foreign key violation
+          httpStatus = HttpStatus.BAD_REQUEST;
+          message = 'Erro de violação de chave estrangeira.';
+          errorCode = 'FOREIGN_KEY_VIOLATION';
           break;
         default:
           httpStatus = HttpStatus.BAD_REQUEST;
           message = 'Erro na operação de banco de dados.';
-          errorCode = `DATABASE_ERROR_${exception.code}`;
+          errorCode = `DATABASE_ERROR_${error.code}`;
       }
     }
 

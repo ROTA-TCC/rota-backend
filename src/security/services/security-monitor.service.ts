@@ -1,33 +1,40 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
 import { createHash } from 'crypto';
-import { PrismaService } from '../../prisma/prisma.service';
+import { eq, and } from 'drizzle-orm';
 import { MailService } from '../../mail/services/mail.service';
+import * as schema from '../../drizzle/schema';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
 @Injectable()
 export class SecurityMonitorService {
   private readonly logger = new Logger(SecurityMonitorService.name);
 
   constructor(
-    private readonly prisma: PrismaService,
     private readonly mailService: MailService,
+    @Inject('DRIZZLE') private readonly db: NodePgDatabase<typeof schema>,
   ) {}
 
   async monitorLogin(userId: string, userAgent: string, email: string): Promise<void> {
     const fingerprint = this.generateFingerprint(userAgent);
 
-    const device = await this.prisma.knownDevice.findUnique({
-      where: {
-        userId_deviceFingerprint: { userId, deviceFingerprint: fingerprint },
-      },
-    });
+    const [device] = await this.db
+      .select()
+      .from(schema.knownDevice)
+      .where(
+        and(
+          eq(schema.knownDevice.userId, userId),
+          eq(schema.knownDevice.deviceFingerprint, fingerprint),
+        ),
+      )
+      .limit(1);
 
     if (!device) {
       await this.handleNewDevice(userId, fingerprint, email);
     } else {
-      await this.prisma.knownDevice.update({
-        where: { id: device.id },
-        data: { lastUsed: new Date() },
-      });
+      await this.db
+        .update(schema.knownDevice)
+        .set({ lastUsed: new Date() })
+        .where(eq(schema.knownDevice.id, device.id));
     }
   }
 
@@ -42,8 +49,9 @@ export class SecurityMonitorService {
   ): Promise<void> {
     this.logger.warn(`Novo dispositivo detectado para o usuário ${userId}`);
 
-    await this.prisma.knownDevice.create({
-      data: { userId, deviceFingerprint: fingerprint },
+    await this.db.insert(schema.knownDevice).values({
+      userId,
+      deviceFingerprint: fingerprint,
     });
 
     try {
@@ -63,8 +71,12 @@ export class SecurityMonitorService {
     ip: string,
     ua: string,
   ): Promise<void> {
-    await this.prisma.auditLog.create({
-      data: { userId, action, details, ipAddress: ip, userAgent: ua },
+    await this.db.insert(schema.auditLog).values({
+      userId,
+      action,
+      details,
+      ipAddress: ip,
+      userAgent: ua,
     });
   }
 }

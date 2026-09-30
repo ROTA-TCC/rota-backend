@@ -2,13 +2,14 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SessionService } from './session.service';
 import { SessionRepository } from '../repositories/session.repository';
 import { JwtService } from '@nestjs/jwt';
-import { SessionValidatorPolicy } from '../policies/session-validator.policy';
+import { ConfigService } from '@nestjs/config';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 
 describe('SessionService', () => {
   let service: SessionService;
   let repository: jest.Mocked<SessionRepository>;
   let jwtService: jest.Mocked<JwtService>;
+  let configService: jest.Mocked<ConfigService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -29,12 +30,19 @@ describe('SessionService', () => {
             sign: jest.fn().mockReturnValue('mockAccessToken'),
           },
         },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn().mockReturnValue('test-secret'),
+          },
+        },
       ],
     }).compile();
 
     service = module.get<SessionService>(SessionService);
     repository = module.get(SessionRepository);
     jwtService = module.get(JwtService);
+    configService = module.get(ConfigService);
   });
 
   it('should be defined', () => {

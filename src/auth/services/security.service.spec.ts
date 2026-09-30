@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SecurityService } from './security.service';
-import { PrismaService } from '../../prisma/prisma.service';
 
 describe('SecurityService', () => {
   let service: SecurityService;
@@ -10,7 +9,6 @@ describe('SecurityService', () => {
       providers: [
         SecurityService,
         {
-          provide: PrismaService,
           useValue: { user: { findUnique: jest.fn() } },
         },
       ],

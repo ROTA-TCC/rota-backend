@@ -1,17 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserRepository } from './user.repository';
-import { PrismaService } from '../../prisma/prisma.service';
 
 describe('UserRepository', () => {
   let repository: UserRepository;
-  let prisma: jest.Mocked<PrismaService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UserRepository,
         {
-          provide: PrismaService,
           useValue: {
             user: {
               findUnique: jest.fn(),
@@ -24,7 +21,6 @@ describe('UserRepository', () => {
     }).compile();
 
     repository = module.get<UserRepository>(UserRepository);
-    prisma = module.get(PrismaService);
   });
 
   it('should find unique user by email', async () => {

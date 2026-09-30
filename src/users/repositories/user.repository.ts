@@ -1,80 +1,78 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { Inject, Injectable } from '@nestjs/common';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { eq, or, and } from 'drizzle-orm';
+import { DRIZZLE } from '../../drizzle/drizzle.module';
+import * as schema from '../../drizzle/schema';
 
 @Injectable()
 export class UserRepository {
-  constructor(private prisma: PrismaService) {}
+  constructor(@Inject(DRIZZLE) private db: NodePgDatabase<typeof schema>) {}
 
   async findById(id: string) {
-    return this.prisma.user.findUnique({ where: { id } });
+    const [result] = await this.db.select().from(schema.users).where(eq(schema.users.id, id));
+    return result || null;
   }
 
   async findUniqueByEmail(email: string) {
-    return this.prisma.user.findUnique({ where: { email } });
+    const [result] = await this.db.select().from(schema.users).where(eq(schema.users.email, email));
+    return result || null;
   }
 
   async findFirstByEmailOrAlias(email: string, alias: string) {
-    return this.prisma.user.findFirst({
-      where: { OR: [{ email }, { alias }] },
-    });
+    const [result] = await this.db
+      .select()
+      .from(schema.users)
+      .where(or(eq(schema.users.email, email), eq(schema.users.alias, alias)));
+    return result || null;
   }
 
-  async create(data: {
-    email: string;
-    alias: string;
-    password: string;
-    verificationToken: string;
-  }) {
-    return this.prisma.user.create({
-      data,
-      select: { id: true, email: true, alias: true, role: true },
+  async create(data: typeof schema.users.$inferInsert) {
+    const [result] = await this.db.insert(schema.users).values(data).returning({
+        id: schema.users.id,
+        email: schema.users.email,
+        alias: schema.users.alias,
+        role: schema.users.role,
     });
+    return result;
   }
 
   async findByToken(verificationToken: string) {
-    return this.prisma.user.findUnique({ where: { verificationToken } });
+    const [result] = await this.db.select().from(schema.users).where(eq(schema.users.verificationToken, verificationToken));
+    return result || null;
   }
 
-  async update(
-    id: string,
-    data: {
-      password?: string;
-      isVerified?: boolean;
-      verificationToken?: string | null;
-      is2faEnabled?: boolean;
-      twoFactorCode?: string | null;
-      twoFactorExpiresAt?: Date | null;
-    },
-  ) {
-    return this.prisma.user.update({
-      where: { id },
-      data,
-    });
+  async update(id: string, data: Partial<typeof schema.users.$inferInsert>) {
+    const [result] = await this.db.update(schema.users).set(data).where(eq(schema.users.id, id)).returning();
+    return result;
   }
 
   async update2faCode(id: string, code: string, expiresAt: Date) {
-    return this.prisma.user.update({
-      where: { id },
-      data: { twoFactorCode: code, twoFactorExpiresAt: expiresAt },
-    });
+    return this.update(id, { twoFactorCode: code, twoFactorExpiresAt: expiresAt });
   }
 
   async clear2faCode(id: string) {
-    return this.prisma.user.update({
-      where: { id },
-      data: { twoFactorCode: null, twoFactorExpiresAt: null },
-    });
+    return this.update(id, { twoFactorCode: null, twoFactorExpiresAt: null });
   }
 
   async findKnownDevice(userId: string, deviceFingerprint: string) {
-    return this.prisma.knownDevice.findUnique({
-      where: { userId_deviceFingerprint: { userId, deviceFingerprint } },
-    });
+    const [result] = await this.db
+      .select()
+      .from(schema.knownDevice)
+      .where(and(eq(schema.knownDevice.userId, userId), eq(schema.knownDevice.deviceFingerprint, deviceFingerprint)));
+    return result || null;
   }
 
   async createKnownDevice(userId: string, deviceFingerprint: string) {
-    return this.prisma.knownDevice.create({
-      data: { userId, deviceFingerprint },
-    });
+    const [result] = await this.db.insert(schema.knownDevice).values({ userId, deviceFingerprint }).returning();
+    return result;
+  }
+
+  async verifyEmail(token: string) {
+    const [result] = await this.db
+      .update(schema.users)
+      .set({ isVerified: true, verificationToken: null })
+      .where(eq(schema.users.verificationToken, token))
+      .returning();
+    return result;
   }
 }

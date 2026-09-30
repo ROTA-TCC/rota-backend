@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { APP_GUARD } from '@nestjs/core';
+import { ConfigService, ConfigModule } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { SecurityService } from './services/security.service';
 import { SessionService } from './services/session.service';
@@ -39,9 +40,21 @@ import { VerifyTwoFactorUseCase } from './use-cases/verify-2fa.use-case';
     UsersModule,
     MailModule,
     PassportModule,
-    JwtModule.register({
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '15m' },
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const secret = configService.get<string>('JWT_SECRET');
+
+        if (!secret) {
+          throw new Error('JWT_SECRET is not configured');
+        }
+
+        return {
+          secret,
+          signOptions: { expiresIn: '15m' },
+        };
+      },
     }),
     ThrottlerModule.forRoot([
       {

@@ -1,9 +1,9 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { Session, User } from '@prisma/client';
+import { sessions, users } from '../../drizzle/schema';
 
 export class SessionValidatorPolicy {
   static validate(
-    session: (Session & { user: User }) | null,
+    session: (typeof sessions.$inferSelect & { user: typeof users.$inferSelect | null }) | null,
     currentUserAgent: string,
   ): void {
     if (!session) {
