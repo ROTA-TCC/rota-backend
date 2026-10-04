@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { Plan, TransactionType } from '../../drizzle/schema';
-import { CreateCheckoutDto } from '@ROTA-TCC/types';
+import type { CreateCheckoutDto } from '@ROTA-TCC/types';
 
 const PLAN_PRICES = {
   GRATIS: 0,

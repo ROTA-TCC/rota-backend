@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { SecurityFacade } from '../services/security.facade';
 import { AccountFacade } from '../services/account.facade';
-import { VerifyEmailDto } from '@ROTA-TCC/types';
+import type { VerifyEmailDto } from '@ROTA-TCC/types';
 import {
   ApiTags,
   ApiOperation,
@@ -50,7 +50,7 @@ export class SecurityController {
   @Get('status')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Obter status de segurança' })
-  @ApiOkResponse({ type: SecurityStatusResponse })
+  @ApiOkResponse()
   @ApiUnauthorizedResponse({ description: 'JWT ausente ou inválido.' })
   async getStatus(@UserId() userId: string) {
     return this.securityFacade.getSecurityStatus(userId);

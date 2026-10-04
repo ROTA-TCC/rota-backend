@@ -11,7 +11,7 @@ import {
 import type { RawBodyRequest } from '@nestjs/common';
 import { Request } from 'express';
 import { PaymentService } from './payment.service';
-import { CreateCheckoutDto } from '@ROTA-TCC/types';
+import type { CreateCheckoutDto } from '@ROTA-TCC/types';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/user.decorator';

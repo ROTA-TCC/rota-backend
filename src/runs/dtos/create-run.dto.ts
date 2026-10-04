@@ -1,41 +1,55 @@
 import { IsDateString, IsNumber, IsOptional, IsArray, ValidateNested, Min } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Expose } from 'class-transformer';
+import type { 
+  CreateRunDto as CreateRunInterface, 
+  TrackpointDto as TrackpointInterface 
+} from '@ROTA-TCC/types';
 
-export class TrackpointDto {
+export class TrackpointDto implements TrackpointInterface {
+  @Expose({ name: 'latitude' })
   @IsNumber()
   latitude: number;
 
+  @Expose({ name: 'longitude' })
   @IsNumber()
   longitude: number;
 
   @IsOptional()
+  @Expose({ name: 'altitude' })
   @IsNumber()
   altitude?: number;
 
   @IsOptional()
+  @Expose({ name: 'speed_mps' })
   @IsNumber()
-  speed_mps?: number;
+  speedMps?: number;
 
+  @Expose({ name: 'recorded_at' })
   @IsDateString()
-  recorded_at: string;
+  recordedAt: string;
 }
 
-export class CreateRunDto {
+export class CreateRunDto implements CreateRunInterface {
+  @Expose({ name: 'start_time' })
   @IsDateString()
-  start_time: string;
+  startTime: string;
 
+  @Expose({ name: 'end_time' })
   @IsDateString()
-  end_time: string;
+  endTime: string;
 
+  @Expose({ name: 'duration_seconds' })
   @IsNumber()
   @Min(1)
-  duration_seconds: number;
+  durationSeconds: number;
 
+  @Expose({ name: 'distance_meters' })
   @IsNumber()
   @Min(0)
-  distance_meters: number;
+  distanceMeters: number;
 
   @IsOptional()
+  @Expose({ name: 'calories' })
   @IsNumber()
   calories?: number;
 

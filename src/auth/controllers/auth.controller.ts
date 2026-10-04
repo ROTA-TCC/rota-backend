@@ -1,7 +1,7 @@
 import { Controller, Post, Body, UseInterceptors } from '@nestjs/common';
 import { AuthFacade } from '../services/auth.facade';
 import { AccountFacade } from '../services/account.facade';
-import { LoginDto, RegisterDto, TwoFactorVerifyDto } from '@ROTA-TCC/types';
+import type { LoginDto, RegisterDto, TwoFactorVerifyDto } from '@ROTA-TCC/types';
 import { SetCookieInterceptor } from '../interceptors/set-cookie.interceptor';
 import { TransformInterceptor } from '../../common/interceptors/transform.interceptor';
 import { RefreshToken } from '../decorators/refresh-token.decorator';
@@ -18,10 +18,9 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import {
-  AuthResponse,
-  TwoFactorRequiredResponse,
-} from '@ROTA-TCC/types';
+import { AuthResponse as AuthResponseType, TwoFactorRequiredResponse as TwoFactorRequiredResponseType } from '@ROTA-TCC/types';
+
+import { AuthResponse, TwoFactorRequiredResponse } from '@ROTA-TCC/types';
 
 @ApiTags('Autenticação')
 @Controller('auth')
@@ -52,11 +51,10 @@ export class AuthController {
     description:
       'Valida credenciais. Se o 2FA estiver ativo, retorna 202 com partialToken.',
   })
-  @ApiOkResponse({ description: 'Login bem sucedido.', type: AuthResponse })
+  @ApiOkResponse({ description: 'Login bem sucedido.' })
   @ApiResponse({
     status: 202,
     description: '2FA necessário.',
-    type: TwoFactorRequiredResponse,
   })
   @ApiUnauthorizedResponse({ description: 'E-mail ou senha incorretos.' })
   @ApiTooManyRequestsResponse({
@@ -91,7 +89,6 @@ export class AuthController {
   @ApiOperation({ summary: 'Verificar código 2FA' })
   @ApiOkResponse({
     description: '2FA verificado. Sessão iniciada.',
-    type: AuthResponse,
   })
   @ApiUnauthorizedResponse({
     description: 'Código inválido ou token parcial expirado.',

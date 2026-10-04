@@ -4,7 +4,6 @@ import {
   HealthCheck,
   MemoryHealthIndicator,
   HealthIndicatorResult,
-  HealthCheckError,
 } from '@nestjs/terminus';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { sql } from 'drizzle-orm';
@@ -47,10 +46,7 @@ export class HealthController {
       return { database: { status: 'up' } };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Database ping failed';
-
-      throw new HealthCheckError('Database check failed', {
-        database: { status: 'down', message },
-      });
+      return { database: { status: 'down', message } };
     }
   }
 }

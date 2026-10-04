@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { RegisterUserUseCase } from '../use-cases/register-user.use-case';
 import { VerifyEmailUseCase } from '../use-cases/verify-email.use-case';
-import { RegisterDto } from '@ROTA-TCC/types';
+import type { RegisterDto } from '@ROTA-TCC/types';
 import { UserMapper } from '../../users/mappers/user.mapper';
 
 @Injectable()

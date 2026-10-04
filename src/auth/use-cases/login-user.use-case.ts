@@ -3,7 +3,7 @@ import { UsersService } from '../../users/services/users.service';
 import { SecurityService } from '../services/security.service';
 import { TwoFactorService } from '../services/two-factor.service';
 import { JwtService } from '@nestjs/jwt';
-import { LoginDto } from '@ROTA-TCC/types';
+import type { LoginDto } from '@ROTA-TCC/types';
 import { Email } from '../../common/domain/value-objects/email.vo';
 import { Password } from '../../common/domain/value-objects/password.vo';
 

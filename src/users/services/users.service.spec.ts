@@ -8,7 +8,7 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import { RegisterDto } from '@ROTA-TCC/types';
+import type { RegisterDto } from '@ROTA-TCC/types';
 
 describe('UserService', () => {
   let service: UserService;

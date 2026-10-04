@@ -32,11 +32,11 @@ export class ProfileRepository {
   }
 
   async update(userId: string, data: UpdateProfileDto) {
-    const { peso, altura, idade, nivel_dificuldade, mapa_ocultacao } = data;
+    const { peso, altura, idade, nivelDificuldade, mapaOcultacao } = data;
 
     let hideoutExpr: any = undefined;
-    if (mapa_ocultacao) {
-      const { latitude, longitude } = mapa_ocultacao;
+    if (mapaOcultacao) {
+      const { latitude, longitude } = mapaOcultacao;
       hideoutExpr = sql`ST_SetSRID(ST_MakePoint(${longitude}::double precision, ${latitude}::double precision), 4326)::geometry`;
     }
 
@@ -47,9 +47,9 @@ export class ProfileRepository {
         peso,
         altura,
         idade,
-        nivelDificuldade: nivel_dificuldade,
+        nivelDificuldade,
         hideoutLocation: hideoutExpr,
-        hideoutRadius: mapa_ocultacao?.raio_metros,
+        hideoutRadius: mapaOcultacao?.radiusMetres,
         updatedAt: new Date(),
       })
       .onConflictDoUpdate({
@@ -58,9 +58,9 @@ export class ProfileRepository {
           peso: peso !== undefined ? peso : sql`profiles.peso`,
           altura: altura !== undefined ? altura : sql`profiles.altura`,
           idade: idade !== undefined ? idade : sql`profiles.idade`,
-          nivelDificuldade: nivel_dificuldade !== undefined ? nivel_dificuldade : sql`profiles."nivelDificuldade"`,
+          nivelDificuldade: nivelDificuldade !== undefined ? nivelDificuldade : sql`profiles."nivelDificuldade"`,
           hideoutLocation: hideoutExpr ?? sql`profiles."hideoutLocation"`,
-          hideoutRadius: mapa_ocultacao?.raio_metros ?? sql`profiles."hideoutRadius"`,
+          hideoutRadius: mapaOcultacao?.radiusMetres ?? sql`profiles."hideoutRadius"`,
           updatedAt: new Date(),
         },
       });

@@ -1,6 +1,6 @@
 import { Controller, Post, Body, UseInterceptors } from '@nestjs/common';
 import { SecurityFacade } from '../services/security.facade';
-import { ResetPasswordDto } from '@ROTA-TCC/types';
+import type { ResetPasswordDto } from '@ROTA-TCC/types';
 import {
   ApiTags,
   ApiOperation,

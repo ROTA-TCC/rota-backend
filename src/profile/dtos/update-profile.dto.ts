@@ -1,7 +1,11 @@
 import { IsOptional, IsNumber, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
+import type { 
+  UpdateProfileDto as UpdateProfileInterface, 
+  HideoutZoneDto as HideoutZoneInterface 
+} from '@ROTA-TCC/types';
 
-export class MapaOcultacaoDto {
+export class MapaOcultacaoDto implements HideoutZoneInterface {
   @IsNumber()
   latitude: number;
 
@@ -9,10 +13,10 @@ export class MapaOcultacaoDto {
   longitude: number;
 
   @IsNumber()
-  raio_metros: number;
+  radiusMetres: number;
 }
 
-export class UpdateProfileDto {
+export class UpdateProfileDto implements UpdateProfileInterface {
   @IsOptional()
   @IsNumber()
   peso?: number;
@@ -27,10 +31,10 @@ export class UpdateProfileDto {
 
   @IsOptional()
   @IsString()
-  nivel_dificuldade?: string;
+  nivelDificuldade?: string;
 
   @IsOptional()
   @ValidateNested()
   @Type(() => MapaOcultacaoDto)
-  mapa_ocultacao?: MapaOcultacaoDto;
+  mapaOcultacao?: MapaOcultacaoDto;
 }

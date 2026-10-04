@@ -7,16 +7,16 @@ export class CreateRunUseCase {
   constructor(private readonly runsRepository: RunsRepository) {}
 
   async execute(userId: string, dto: CreateRunDto) {
-    const km = dto.distance_meters / 1000;
-    const minutes = dto.duration_seconds / 60;
+    const km = dto.distanceMeters / 1000;
+    const minutes = dto.durationSeconds / 60;
     const averagePace = km > 0 ? minutes / km : 0;
 
     return this.runsRepository.create({
       userId,
-      startTime: new Date(dto.start_time),
-      endTime: new Date(dto.end_time),
-      durationSeconds: dto.duration_seconds,
-      distanceMeters: dto.distance_meters,
+      startTime: new Date(dto.startTime),
+      endTime: new Date(dto.endTime),
+      durationSeconds: dto.durationSeconds,
+      distanceMeters: dto.distanceMeters,
       averagePace,
       calories: dto.calories,
     });

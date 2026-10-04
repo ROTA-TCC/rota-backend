@@ -5,7 +5,7 @@ import {
   Inject,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { CreateCheckoutDto } from '@ROTA-TCC/types';
+import type { CreateCheckoutDto } from '@ROTA-TCC/types';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { eq, sql } from 'drizzle-orm';
 import { DRIZZLE } from '../drizzle/drizzle.module';
